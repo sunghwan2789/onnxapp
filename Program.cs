@@ -2,6 +2,10 @@
 using System.Numerics.Tensors;
 using Microsoft.ML.OnnxRuntime;
 
+await Microsoft
+    .Windows.AI.MachineLearning.ExecutionProviderCatalog.GetDefault()
+    .EnsureAndRegisterCertifiedAsync();
+
 var env = OrtEnv.Instance();
 var eps = new OrderedDictionary<string, List<OrtEpDevice>>();
 foreach (var epDevice in env.GetEpDevices())
