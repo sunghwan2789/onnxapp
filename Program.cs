@@ -2,22 +2,39 @@
 using System.Numerics.Tensors;
 using Microsoft.ML.OnnxRuntime;
 
+var env = OrtEnv.Instance();
+var eps = new OrderedDictionary<string, List<OrtEpDevice>>();
+foreach (var epDevice in env.GetEpDevices())
+{
+    _ = eps.TryAdd(epDevice.EpName, []);
+    eps[epDevice.EpName].Add(epDevice);
+    var device = epDevice.HardwareDevice;
+    Console.WriteLine(
+        $"Device: {device.Type} {device.Vendor} {device.VendorId} - {epDevice.EpName}"
+    );
+}
+
 var sessionOptions = new SessionOptions
 {
     GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL,
 };
 
+foreach (var epDevices in eps.Values.Reverse())
+{
+    sessionOptions.AppendExecutionProvider(env, epDevices, new Dictionary<string, string>());
+}
+
 // sessionOptions.AppendExecutionProvider_Tensorrt();
 // sessionOptions.AppendExecutionProvider_DML();
 
-sessionOptions.AppendExecutionProvider_CoreML(CoreMLFlags.COREML_FLAG_CREATE_MLPROGRAM);
+// sessionOptions.AppendExecutionProvider_CoreML(CoreMLFlags.COREML_FLAG_CREATE_MLPROGRAM);
 
 // sessionOptions.AppendExecutionProvider("CoreML", new() {
 //     ["ModelFormat"] = "MLProgram",
 //     ["MLComputeUnits"] = "ALL",
 // });
 
-sessionOptions.AppendExecutionProvider_CPU();
+// sessionOptions.AppendExecutionProvider("WebGPU");
 
 using var session = new InferenceSession("matmul.onnx", sessionOptions);
 #pragma warning disable SYSLIB5001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
