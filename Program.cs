@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Numerics.Tensors;
 using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.EP.WebGpu;
 
 var env = OrtEnv.Instance();
+env.RegisterExecutionProviderLibrary("webgpu_ep", WebGpuEp.GetLibraryPath());
+
 var eps = new OrderedDictionary<string, List<OrtEpDevice>>();
 foreach (var epDevice in env.GetEpDevices())
 {
